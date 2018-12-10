@@ -15,8 +15,10 @@ if [ $# -eq 2 ]; then
     TimeInterval=$2
 fi
 
-# Imageformat works only with Canon EOS 5D Mark II. Please change for other cameras
-gphoto2 --set-config flashmode=0 --set-config /main/imgsettings/imageformat=0 --interval ${TimeInterval} --capture-image-and-download --force-overwrite --filename "${OutputDir}/%Y%m%d%H%M%S.jpg"
+gphoto2 --set-config flashmode=0 --interval ${TimeInterval} --capture-image-and-download --force-overwrite --filename "${OutputDir}/%Y%m%d%H%M%S.jpg"
+
+# # Imageformat works only with Canon EOS 5D Mark II. Please change for other cameras
+# gphoto2 --set-config flashmode=0 --set-config /main/imgsettings/imageformat=0 --interval ${TimeInterval} --capture-image-and-download --force-overwrite --filename "${OutputDir}/%Y%m%d%H%M%S.jpg"
 
 # If one knows how many frames to capture
 #gphoto2 --set-config flashmode=0 --set-config /main/imgsettings/imageformat=0 --interval ${TimeInterval} --frames 10 --capture-image-and-download --force-overwrite --filename "${OutputDir}/%Y-%m-%d_%Hh%Mm%Ss.jpg"
