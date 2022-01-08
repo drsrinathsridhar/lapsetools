@@ -1,2 +1,2 @@
 # lapsetools
-Scripts and software for time lapse photography.
+Scripts and software for timelapse photography, including astro timelapses.
