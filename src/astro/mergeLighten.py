@@ -10,7 +10,7 @@ from tqdm import tqdm
 Parser = argparse.ArgumentParser(description='Create star trails.')
 Parser.add_argument('-i', '--input-dir', help='Input directory with JPG files.', required=True)
 Parser.add_argument('-o', '--output-dir', help='Output directory.', required=False, default='./output')
-Parser.add_argument('-r', '--fg-replace-frame', help='Replace final foreground with foreground from this frame.', required=False, default=0, type=int)
+Parser.add_argument('-r', '--fg-replace-frames', nargs='+', help='Replace final foreground with foreground from this frame.', required=False, default=[0], type=int)
 Parser.add_argument('-l', '--limit', help='Limit number of stacked frames. Maximum supported is 10000.', required=False, default=10000, type=int)
 Parser.add_argument('-v', '--visualize', help='Visualize trails.', action='store_true')
 Parser.set_defaults(visualize=False)
@@ -30,15 +30,17 @@ if __name__ == '__main__':
     if os.path.exists(Args.output_dir) is False:
         os.makedirs(Args.output_dir)
 
-    print('[ INFO ]: Using foreground replace frame:', AllFiles[Args.fg_replace_frame])
-    ReplaceFrame = cv2.imread(AllFiles[Args.fg_replace_frame])
+    ReplaceFramesFNs = [AllFiles[i] for i in Args.fg_replace_frames]
+    print('[ INFO ]: Using foreground replace frames:', ReplaceFramesFNs)
     DarkFrame = cv2.imread(AllFiles[0])
     print('[ INFO ]: Generating dark frame...')
     for i in tqdm(range(1, FrameLimit)):
         Image = cv2.imread(AllFiles[i], -1)
         # Darken blend formula: https://en.wikipedia.org/wiki/Blend_modes
         DarkFrame = np.minimum(DarkFrame, Image)
-    # DarkFrame = np.maximum(DarkFrame, ReplaceFrame)
+    ReplaceFrames = [cv2.imread(FN) for FN in ReplaceFramesFNs]
+    for RF in ReplaceFrames:
+        DarkFrame = np.maximum(DarkFrame, RF)
 
     THRESHOLD = 10 # PARAM
     DarkFrameGray = cv2.cvtColor(DarkFrame, cv2.COLOR_BGR2GRAY)
@@ -57,7 +59,8 @@ if __name__ == '__main__':
         # Lighten blend formula: https://en.wikipedia.org/wiki/Blend_modes
         TrailImage = np.maximum(TrailImage, Image)
         MaskedTrail = TrailImage
-        MaskedTrail[FGMask] = ReplaceFrame[FGMask]
+        for RF in ReplaceFrames:
+            MaskedTrail[FGMask] = np.maximum(RF[FGMask], MaskedTrail[FGMask])
 
         cv2.imwrite(os.path.join(Args.output_dir, 'frame'+str(i).zfill(6)+'.jpg'), MaskedTrail)
 
